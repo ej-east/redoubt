@@ -1,0 +1,13 @@
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+/tmp/
+sbom.spdx.json
+trivy-results.sarif
+
+NA.md
+READMEPROTOTYPE.md
