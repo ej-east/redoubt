@@ -10,7 +10,7 @@ RUN microdnf reinstall -y --nodocs tzdata \
 FROM registry.access.redhat.com/ubi9/ubi-micro@sha256:1ef916d40ff7f1a4882a31ad5ab37f9572baa7bd182c3519d5e0cb557ffc04f3
 
 LABEL org.opencontainers.image.title="golang" \
-      org.opencontainers.image.source="https://github.com/ej-east/bedrock" \
+      org.opencontainers.image.source="https://github.com/ej-east/redoubt" \
       org.opencontainers.image.base.name="registry.access.redhat.com/ubi9/ubi-micro" \
       org.opencontainers.image.description="UBI9-micro runtime for FIPS-mode Go binaries (GODEBUG=fips140=on)"
 

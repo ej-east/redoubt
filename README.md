@@ -1,19 +1,19 @@
-# bedrock
+# redoubt
 
-`bedrock` is a collection of hardened, reproducible container images and reusable CI workflows for building, scanning, signing, and attestation. `bedrock` makes it easy for downstream services to ship on a known secure foundation without re-inventing the supply-chain wheel.
+`redoubt` is a collection of hardened, reproducible container images and reusable CI workflows for building, scanning, signing, and attestation. `redoubt` makes it easy for downstream services to ship on a known secure foundation without re-inventing the supply-chain wheel.
 
 ## Overview
 
 Every image in this repository goes through the same pipeline:
 
-![Pipeline Diagram](diagrams/bedrock-diagram.png)
+![Pipeline Diagram](diagrams/redoubt-diagram.png)
 
-1. **Build** - [Buildx](https://github.com/docker/buildx) builds multi-architecture images (`linux/amd64`, `linux/arm64`) on a [distroless](https://github.com/GoogleContainerTools/distroless) base.
+1. **Build** - [Buildx](https://github.com/docker/buildx) builds multi-architecture images (`linux/amd64`, `linux/arm64`) on a minimal base ([distroless](https://github.com/GoogleContainerTools/distroless) for general images, UBI Micro for FIPS images).
 2. **Scan** - [Trivy](https://github.com/aquasecurity/trivy) performs a security scan. It gates on HIGH/CRITICAL CVEs and uploads a [SARIF](https://sarifweb.azurewebsites.net/) to GitHub code scanning
 3. **Sign** - [Cosign](https://github.com/sigstore/cosign) keylessly signs images using the workflow's OIDC identity. The signatures are logged to [Rekor](https://docs.sigstore.dev/logging/overview/).
 4. **Attest** - [Syft](https://github.com/anchore/syft) generates an SBOM which is subsequently attached to the image as a cosign attestation.
 
-Images are published to GHCR at `ghcr.io/ej-east/<image-name>`. The build pipeline also exposes a reusable worfklow at `github/workflows/build-bedrock-image.yaml` that downstream repos call with `uses:`. 
+Images are published to GHCR at `ghcr.io/ej-east/<image-name>`. The build pipeline also exposes a reusable workflow at `.github/workflows/build-redoubt-image.yaml` that downstream repos call with `uses:`.
 
 ## Quick Start 
 
@@ -64,7 +64,7 @@ on:
 
 jobs:
   build:
-    uses: ej-east/bedrock/.github/workflows/build-bedrock-image.yaml@main
+    uses: ej-east/redoubt/.github/workflows/build-redoubt-image.yaml@main
     with:
       image-name: <image-name>
     permissions:
@@ -74,7 +74,7 @@ jobs:
       security-events: write
 ```
 
-It's recommended to pin to a commit SHA to migitate possible supply chain attacks. 
+It's recommended to pin to a commit SHA to mitigate possible supply chain attacks.
 
 ### Verify a signed image
 
@@ -82,7 +82,7 @@ You need to install [cosign](https://github.com/sigstore/cosign)
 
 ```bash
 cosign verify ghcr.io/ej-east/static-base:latest \
-  --certificate-identity-regexp 'https://github.com/ej-east/bedrock/\.github/workflows/build-bedrock-image\.yaml@.*' \
+  --certificate-identity-regexp 'https://github.com/ej-east/redoubt/\.github/workflows/build-redoubt-image\.yaml@.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
@@ -91,10 +91,29 @@ Verify/Download SBOM attestation:
 ```bash
 cosign verify-attestation \
   --type spdxjson \
-  --certificate-identity-regexp 'https://github.com/ej-east/bedrock/\.github/workflows/build-bedrock-image\.yaml@.*' \
+  --certificate-identity-regexp 'https://github.com/ej-east/redoubt/\.github/workflows/build-redoubt-image\.yaml@.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \
   ghcr.io/ej-east/static-base:latest
 ```
+
+## Image Catalog
+
+| Image Name                                                | Description                                                                                | Is FIPS? |
+|-----------------------------------------------------------|--------------------------------------------------------------------------------------------|----------|
+| `ghcr.io/ej-east/static-base`                             | Static webserver image for SPAs and docs sites.                                            | No       |
+| `ghcr.io/ej-east/golang` / `ghcr.io/ej-east/golang-build` | This container is designed to build and run golang images within a production environment. | Yes      |
+
+
+## Design Decisions
+
+### Different base options
+
+Different images use different base options. For example `static-base` uses Google's solution to Distroless while the `golang` image set uses Red Hat's Universal Base Image (UBI). UBI Micro carries FIPS 140-3 validated cryptograph and is the right choice for Federal workloads. 
+
+### Multi-architecture by default 
+
+Every image is built for both `amd64` and `arm64`. Production environments are increasingly using `arm64` devices. It's important to produce production ready images for these machines. 
+
 ## License
 
 See [LICENSE.md](LICENSE.md).

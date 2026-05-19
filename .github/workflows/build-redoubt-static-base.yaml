@@ -1,24 +1,24 @@
-name: build-bedrock-static-base
+name: build-redoubt-static-base
 
 on:
   push:
     branches: [main]
     paths:
       - "images/static-base/**"
-      - ".github/workflows/build-bedrock-static-base.yaml"
-      - ".github/workflows/build-bedrock-image.yaml"
+      - ".github/workflows/build-redoubt-static-base.yaml"
+      - ".github/workflows/build-redoubt-image.yaml"
     tags:
       - "static-base/v*"
   pull_request:
     paths:
       - "images/static-base/**"
-      - ".github/workflows/build-bedrock-static-base.yaml"
-      - ".github/workflows/build-bedrock-image.yaml"
+      - ".github/workflows/build-redoubt-static-base.yaml"
+      - ".github/workflows/build-redoubt-image.yaml"
   workflow_dispatch:
 
 jobs:
   build:
-    uses: ./.github/workflows/build-bedrock-image.yaml
+    uses: ./.github/workflows/build-redoubt-image.yaml
     with:
       image-name: static-base
     permissions:

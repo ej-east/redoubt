@@ -1,4 +1,4 @@
-name: build-bedrock-image
+name: build-redoubt-image
 
 on:
   workflow_dispatch:

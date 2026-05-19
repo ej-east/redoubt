@@ -14,6 +14,6 @@ RUN microdnf install -y --nodocs \
  && rm -rf /var/cache/yum /var/cache/dnf
 
 LABEL org.opencontainers.image.title="golang-build" \
-      org.opencontainers.image.source="https://github.com/ej-east/bedrock" \
+      org.opencontainers.image.source="https://github.com/ej-east/redoubt" \
       org.opencontainers.image.base.name="registry.access.redhat.com/ubi9/ubi-minimal" \
       org.opencontainers.image.description="UBI9-minimal Go toolchain for FIPS 140-3 builds (GOFIPS140=v1.0.0, CGO_ENABLED=0)"

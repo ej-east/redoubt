@@ -28,7 +28,7 @@ FROM gcr.io/distroless/static-debian13:nonroot
 ARG SWS_VERSION
 
 LABEL org.opencontainers.image.title="static-base" \ 
-      org.opencontainers.image.source="https://github.com/ej-east/bedrock" \ 
+      org.opencontainers.image.source="https://github.com/ej-east/redoubt" \ 
       org.opencontainers.image.version="${SWS_VERSION}" \
       org.opencontainers.image.base.name="gcr.io/distroless/static-debian13:nonroot" \ 
       org.opencontainers.image.description="Distroless image for static sites"

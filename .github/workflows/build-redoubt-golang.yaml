@@ -1,24 +1,24 @@
-name: build-bedrock-golang
+name: build-redoubt-golang
 
 on:
   push:
     branches: [main]
     paths:
       - "images/golang/**"
-      - ".github/workflows/build-bedrock-golang.yaml"
-      - ".github/workflows/build-bedrock-image.yaml"
+      - ".github/workflows/build-redoubt-golang.yaml"
+      - ".github/workflows/build-redoubt-image.yaml"
     tags:
       - "golang/v*"
   pull_request:
     paths:
       - "images/golang/**"
-      - ".github/workflows/build-bedrock-golang.yaml"
-      - ".github/workflows/build-bedrock-image.yaml"
+      - ".github/workflows/build-redoubt-golang.yaml"
+      - ".github/workflows/build-redoubt-image.yaml"
   workflow_dispatch:
 
 jobs:
   golang-build:
-    uses: ./.github/workflows/build-bedrock-image.yaml
+    uses: ./.github/workflows/build-redoubt-image.yaml
     with:
       image-name: golang-build
       dockerfile: Dockerfile.builder
@@ -29,7 +29,7 @@ jobs:
       id-token: write
       security-events: write
   golang:
-    uses: ./.github/workflows/build-bedrock-image.yaml
+    uses: ./.github/workflows/build-redoubt-image.yaml
     with:
       image-name: golang
       dockerfile: Dockerfile.runtime
