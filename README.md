@@ -6,6 +6,8 @@
 
 Every image in this repository goes through the same pipeline:
 
+[Pipeline Diagram](diagrams/bedrock-diagram.png)
+
 1. **Build** - [Buildx](https://github.com/docker/buildx) builds multi-architecture images (`linux/amd64`, `linux/arm64`) on a [distroless](https://github.com/GoogleContainerTools/distroless) base.
 2. **Scan** - [Trivy](https://github.com/aquasecurity/trivy) performs a security scan. It gates on HIGH/CRITICAL CVEs and uploads a [SARIF](https://sarifweb.azurewebsites.net/) to GitHub code scanning
 3. **Sign** - [Cosign](https://github.com/sigstore/cosign) keylessly signs images using the workflow's OIDC identity. The signatures are logged to [Rekor](https://docs.sigstore.dev/logging/overview/).
