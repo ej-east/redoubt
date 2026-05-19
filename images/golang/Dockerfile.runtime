@@ -1,0 +1,25 @@
+# syntax=docker/dockerfile:1.24
+FROM registry.access.redhat.com/ubi9/ubi-minimal@sha256:12db9874bd753eb98b1ab3d840e75de5d6842ac0604fbd68c012adefe97140be AS userdb
+
+RUN microdnf reinstall -y --nodocs tzdata \
+ && microdnf clean all \
+ && rm -rf /var/cache/yum /var/cache/dnf \
+ && echo "appuser:x:65532:65532::/:/sbin/nologin" >> /etc/passwd \
+ && echo "appuser:x:65532:" >> /etc/group
+
+FROM registry.access.redhat.com/ubi9/ubi-micro@sha256:1ef916d40ff7f1a4882a31ad5ab37f9572baa7bd182c3519d5e0cb557ffc04f3
+
+LABEL org.opencontainers.image.title="golang" \
+      org.opencontainers.image.source="https://github.com/ej-east/bedrock" \
+      org.opencontainers.image.base.name="registry.access.redhat.com/ubi9/ubi-micro" \
+      org.opencontainers.image.description="UBI9-micro runtime for FIPS-mode Go binaries (GODEBUG=fips140=on)"
+
+ENV GODEBUG=fips140=on
+
+WORKDIR /app
+
+COPY --from=userdb /etc/passwd /etc/passwd
+COPY --from=userdb /etc/group /etc/group
+COPY --from=userdb /usr/share/zoneinfo /usr/share/zoneinfo
+
+USER 65532:65532
