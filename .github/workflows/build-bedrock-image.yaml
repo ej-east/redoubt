@@ -1,18 +1,47 @@
-name: build-static-base
+name: build-bedrock-image
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "images/static-base/**"
-      - ".github/workflows/build-static-base.yml"
-    tags:
-      - "static-base/v*"
-  pull_request:
-    paths:
-      - "images/static-base/**"
-      - ".github/workflows/build-static-base.yml"
   workflow_dispatch:
+    inputs:
+      registry:
+        description: Container registry to push to
+        required: false
+        type: string
+        default: ghcr.io
+
+      image-name:
+        description: Image name without owner, e.g. static-base
+        required: true
+        type: string
+
+      platforms:
+        description: Comma-separated list of Docker build platforms
+        required: false
+        type: string
+        default: linux/amd64,linux/arm64
+      context:
+        required: false
+        description: Build context path (default images/<image-name>)
+        type: string
+        default: ""
+
+  workflow_call:
+    inputs:
+      registry:
+        required: false
+        type: string
+        default: ghcr.io
+      image-name:
+        required: true
+        type: string
+      platforms:
+        required: false
+        type: string
+        default: linux/amd64,linux/arm64
+      context:
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -25,9 +54,9 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/static-base
-  PLATFORMS: linux/amd64,linux/arm64
+  REGISTRY: ${{ inputs.registry }}
+  IMAGE_REPOSITORY: ${{ github.repository_owner }}/${{ inputs.image-name }}
+  PLATFORMS: ${{ inputs.platforms }}
 
 jobs:
   build:
@@ -55,11 +84,11 @@ jobs:
         id: meta
         uses: docker/metadata-action@030e881283bb7a6894de51c315a6bfe6a94e05cf # v6
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
-            type=match,pattern=static-base/v(.*),group=1
+            type=match,pattern=${{ inputs.image-name }}/v(.*),group=1
             type=sha,format=short
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
@@ -67,7 +96,7 @@ jobs:
         id: build
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
         with:
-          context: images/static-base
+          context: ${{ inputs.context != '' && inputs.context || format('images/{0}', inputs.image-name)}}
           platforms: ${{ env.PLATFORMS }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -81,7 +110,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}@${{ steps.build.outputs.digest }}
           format: sarif
           output: trivy-results.sarif
           severity: HIGH,CRITICAL
@@ -93,10 +122,10 @@ jobs:
         uses: github/codeql-action/upload-sarif@9e0d7b8d25671d64c341c19c0152d693099fb5ba # v4
         with:
           sarif_file: trivy-results.sarif
-          category: trivy-static-base
+          category: trivy-${{ inputs.image-name }}
 
       - name: Install Cosign
-        if: github.event_name != 'pull_request'
+        if: always() && github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@6f9f17788090df1f26f669e9d70d6ae9567deba6 # v4.1.2
 
       - name: Sign image with Cosign (keyless)
@@ -105,26 +134,26 @@ jobs:
           DIGEST: ${{ steps.build.outputs.digest }}
           TAGS: ${{ steps.meta.outputs.tags }}
         run: |
-          set -eux
+          set -eu
           for tag in ${TAGS}; do
             cosign sign --yes "${tag}@${DIGEST}"
           done
 
       - name: Generate SBOM
-        if: github.event_name != 'pull_request'
+        if: always() && github.event_name != 'pull_request'
         uses: anchore/sbom-action@e22c389904149dbc22b58101806040fa8d37a610 # v0
         with:
-          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.build.outputs.digest }}
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}@${{ steps.build.outputs.digest }}
           format: spdx-json
           output-file: sbom.spdx.json
 
       - name: Attach SBOM as cosign attestation
-        if: github.event_name != 'pull_request'
+        if: always() && github.event_name != 'pull_request'
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
-          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}
         run: |
-          set -eux
+          set -eu
           cosign attest --yes \
             --predicate sbom.spdx.json \
             --type spdxjson \

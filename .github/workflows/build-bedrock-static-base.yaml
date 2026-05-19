@@ -1,0 +1,28 @@
+name: build-bedrock-static-base
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "images/static-base/**"
+      - ".github/workflows/build-bedrock-static-base.yaml"
+      - ".github/workflows/build-bedrock-image.yaml"
+    tags:
+      - "static-base/v*"
+  pull_request:
+    paths:
+      - "images/static-base/**"
+      - ".github/workflows/build-bedrock-static-base.yaml"
+      - ".github/workflows/build-bedrock-image.yaml"
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/build-bedrock-image.yaml
+    with:
+      image-name: static-base
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      security-events: write
