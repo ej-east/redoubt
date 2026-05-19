@@ -7,7 +7,9 @@
   "labels": ["dependencies"],
   "schedule": ["before 6am on monday"],
   "github-actions": {
-    "fileMatch": ["(^|/)templates/[^/]+\\.ya?ml$"]
+    "managerFilePatterns": [
+      "/(^|/)templates/[^/]+\\.ya?ml$/"
+    ]
   },
   "packageRules": [
     {
