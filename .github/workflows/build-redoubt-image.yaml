@@ -50,7 +50,7 @@ on:
       dockerfile:
         required: false
         type: string 
-        default: ""
+        default: Dockerfile
 
 permissions:
   contents: read
