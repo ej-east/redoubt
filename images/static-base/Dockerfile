@@ -29,7 +29,9 @@ ARG SWS_VERSION
 
 LABEL org.opencontainers.image.title="static-base" \ 
       org.opencontainers.image.source="https://github.com/ej-east/bedrock" \ 
-      org.opencontainers.image.version="${SWS_VERSION}"
+      org.opencontainers.image.version="${SWS_VERSION}" \
+      org.opencontainers.image.base.name="gcr.io/distroless/static-debian13:nonroot" \ 
+      org.opencontainers.image.description="Distroless image for static sites"
 
 COPY --from=builder --chown=65532:65532 /tmp/static-web-server /usr/local/bin/static-web-server 
 
