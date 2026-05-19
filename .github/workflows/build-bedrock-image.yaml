@@ -24,6 +24,11 @@ on:
         description: Build context path (default images/<image-name>)
         type: string
         default: ""
+      dockerfile:
+        required: false
+        description: Dockerfile's filename
+        type: string 
+        default: Dockerfile
 
   workflow_call:
     inputs:
@@ -42,6 +47,10 @@ on:
         required: false
         type: string
         default: ""
+      dockerfile:
+        required: false
+        type: string 
+        default: ""
 
 permissions:
   contents: read
@@ -50,7 +59,7 @@ permissions:
   security-events: write
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ inputs.image-name }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
@@ -97,6 +106,7 @@ jobs:
         uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f # v7
         with:
           context: ${{ inputs.context != '' && inputs.context || format('images/{0}', inputs.image-name)}}
+          file:  ${{ format('{0}/{1}', inputs.context != '' && inputs.context || format('images/{0}', inputs.image-name), inputs.dockerfile) }}
           platforms: ${{ env.PLATFORMS }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}

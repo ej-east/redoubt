@@ -1,0 +1,41 @@
+name: build-bedrock-golang
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "images/golang/**"
+      - ".github/workflows/build-bedrock-golang.yaml"
+      - ".github/workflows/build-bedrock-image.yaml"
+    tags:
+      - "golang/v*"
+  pull_request:
+    paths:
+      - "images/golang/**"
+      - ".github/workflows/build-bedrock-golang.yaml"
+      - ".github/workflows/build-bedrock-image.yaml"
+  workflow_dispatch:
+
+jobs:
+  golang-build:
+    uses: ./.github/workflows/build-bedrock-image.yaml
+    with:
+      image-name: golang-build
+      dockerfile: Dockerfile.builder
+      context: images/golang
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      security-events: write
+  golang:
+    uses: ./.github/workflows/build-bedrock-image.yaml
+    with:
+      image-name: golang
+      dockerfile: Dockerfile.runtime
+      context: images/golang
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      security-events: write
