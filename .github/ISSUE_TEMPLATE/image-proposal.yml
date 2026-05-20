@@ -1,0 +1,74 @@
+name: Image proposal
+description: Propose a new hardened image to be built for the redoubt catalog
+title: "[Image] <image-name>: <one-line summary>"
+labels: ["image-proposal", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The goal of redoubt is to build a useful catalog of hardened, reproducible, signed images. Please fill in the form below so the proposal can be evaluated against the project's design principles.
+
+  - type: input
+    id: image-name
+    attributes:
+      label: Image name
+      description: The proposed image name (without registry/owner). Lowercase, hyphenated, no version suffix.
+      placeholder: python-base
+    validations:
+      required: true
+
+  - type: input
+    id: upstream
+    attributes:
+      label: Upstream source
+      description: Link to the project, binary, or runtime being packaged.
+      placeholder: https://github.com/example/project
+    validations:
+      required: true
+
+  - type: dropdown
+    id: base
+    attributes:
+      label: Proposed base image
+      description: Pick the base that matches the workload. UBI Micro is required for FIPS compliance; distroless is the default for general workloads.
+      options:
+        - Distroless (general purpose, smallest surface)
+        - UBI Micro (FIPS 140-3 validated cryptography)
+        - Other (explain in Additional context)
+    validations:
+      required: true
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Why does this belong in redoubt?
+      description: Use case, who is the audience, what problem it solves.
+      placeholder: |
+        - Use case:
+        - Audience:
+        - Why a hardened version doesn't already exist:
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: conformance
+    attributes:
+      label: Conformance checklist
+      description: All items must be true for a proposal to be considered. Check the box only if you have verified each.
+      options:
+        - label: Upstream ships prebuilt binaries for `linux/amd64` AND `linux/arm64`.
+          required: true
+        - label: Upstream publishes SHA256 checksums (or signed artifacts) for releases.
+          required: true
+        - label: The runtime can execute as non-root (UID 65532) with no setuid binaries.
+          required: true
+        - label: The image will not require a shell, package manager, or interactive tooling in the final layer.
+          required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Anything else worth knowing such as CVE patterns, build-time requirements, downstream consumers already lined up, etc.
+    validations:
+      required: false
