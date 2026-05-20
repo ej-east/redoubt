@@ -111,6 +111,9 @@ jobs:
             type=match,pattern=${{ inputs.image-name }}/v(.*),group=1
             type=sha,format=short
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+          labels: |
+            org.opencontainers.image.licenses=MIT
+            org.opencontainers.image.title=${{ inputs.image-name }}
 
       - name: Build and push
         id: build
