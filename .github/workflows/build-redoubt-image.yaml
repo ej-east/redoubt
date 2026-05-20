@@ -166,12 +166,10 @@ jobs:
         if: github.event_name != 'pull_request'
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
-          TAGS: ${{ steps.meta.outputs.tags }}
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}
         run: |
           set -eu
-          for tag in ${TAGS}; do
-            cosign sign --yes "${tag}@${DIGEST}"
-          done
+          cosign sign --yes "${IMAGE}@${DIGEST}"
 
       - name: Generate SBOM
         if: always() && github.event_name != 'pull_request'
