@@ -114,6 +114,12 @@ Different images use different base options. For example `static-base` uses Goog
 
 Every image is built for both `amd64` and `arm64`. Production environments are increasingly using `arm64` devices. It's important to produce production ready images for these machines. 
 
+### SLSA Level
+
+Images currently meet the requirements for **SLSA Build Level 2**. This is achieved through the following: Buildx generates in-toto provenance with `provenance: mode=max`. The resulting attestation is signed by GitHub Actions' OIDC identity, and the build runs on a GitHub-hosted runner. This process satisfies L2's hosted, authenticated, non-falsifiable provenance criteria. 
+
+**SLSA Build Level 3** is on the roadmap. Reaching it means adopting [`slsa-framework/slsa-github-generator`](https://github.com/slsa-framework/slsa-github-generator), instead of the current flow. The driver is that L3 is a FedRAMP requirement for certain workloads.
+
 ## License
 
 See [LICENSE.md](LICENSE.md).
