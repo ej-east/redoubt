@@ -189,3 +189,27 @@ jobs:
             --predicate sbom.spdx.json \
             --type spdxjson \
             "${IMAGE}@${DIGEST}"
+
+      - name: Verify Signed Image
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -eu
+          cosign verify "${IMAGE}@${DIGEST}" \
+          --certificate-identity-regexp 'https://github.com/ej-east/redoubt/\.github/workflows/build-redoubt-image\.yaml@.*' \
+          --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
+      - name: Verify Attestation
+        if: github.event_name != 'pull_request'
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          set -eu
+          cosign verify-attestation \
+            --type spdxjson \
+            --certificate-identity-regexp 'https://github.com/ej-east/redoubt/\.github/workflows/build-redoubt-image\.yaml@.*' \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            "${IMAGE}@${DIGEST}"
