@@ -213,4 +213,4 @@ jobs:
             --type spdxjson \
             --certificate-identity-regexp 'https://github.com/ej-east/redoubt/\.github/workflows/build-redoubt-image\.yaml@.*' \
             --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-            "${IMAGE}@${DIGEST}"
+            "${IMAGE}@${DIGEST}" > /dev/null
