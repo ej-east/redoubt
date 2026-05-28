@@ -203,7 +203,7 @@ jobs:
             --report stig-report.html \
             "scap-security-guide-${SSG_VERSION}/ssg-rhel9-ds.xml" || true
 
-          sudi podman rm "$CID"
+          sudo podman rm "$CID"
 
       - name: Upload STIG report
         if: always() && inputs.data-boundary && github.event_name != 'pull_request'
