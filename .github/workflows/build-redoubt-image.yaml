@@ -183,27 +183,31 @@ jobs:
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}
           DIGEST: ${{ steps.build.outputs.digest }}
+          IMAGE_NAME: ${{ inputs.image-name }}
         run: |
           set -eu
           sudo apt-get update -qq
-          sudo apt-get install -y -qq openscap-scanner openscap-utils podman
+          sudo apt-get install -y -qq openscap-scanner podman
 
           SSG_VERSION=0.1.80
           curl -fsSL -o ssg.tar.bz2 \
             "https://github.com/ComplianceAsCode/content/releases/download/v${SSG_VERSION}/scap-security-guide-${SSG_VERSION}.tar.bz2"
-            tar -xjf ssg.tar.bz2
+          tar -xjf ssg.tar.bz2
 
-          sudo podman pull "${IMAGE}@${DIGEST}"
-          CID=$(podman create "${IMAGE}@${DIGEST}")
+          # Export the image's flattened rootfs and scan it with oscap-chroot.
+          # Avoids oscap-podman's rootful/rootless socket issues on GH runners.
+          podman pull "${IMAGE}@${DIGEST}"
+          podman create --name redoubt-scan-target "${IMAGE}@${DIGEST}"
+          mkdir -p rootfs
+          podman export redoubt-scan-target | tar -xC rootfs/
+          podman rm redoubt-scan-target
 
-          sudo oscap-podman "$CID" xccdf eval \
+          sudo oscap-chroot rootfs/ xccdf eval \
             --profile xccdf_org.ssgproject.content_profile_stig \
-            --tailoring-file "images/${{ inputs.image-name }}/stig-tailoring.xml" \
+            --tailoring-file "images/${IMAGE_NAME}/stig-tailoring.xml" \
             --results stig-results.xml \
             --report stig-report.html \
             "scap-security-guide-${SSG_VERSION}/ssg-rhel9-ds.xml" || true
-
-          sudo podman rm "$CID"
 
       - name: Upload STIG report
         if: always() && inputs.data-boundary && github.event_name != 'pull_request'
