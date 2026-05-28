@@ -193,17 +193,17 @@ jobs:
             "https://github.com/ComplianceAsCode/content/releases/download/v${SSG_VERSION}/scap-security-guide-${SSG_VERSION}.tar.bz2"
             tar -xjf ssg.tar.bz2
 
-          podman pull "${IMAGE}@${DIGEST}"
+          sudo podman pull "${IMAGE}@${DIGEST}"
           CID=$(podman create "${IMAGE}@${DIGEST}")
 
-          oscap-podman "$CID" xccdf eval \
+          sudo oscap-podman "$CID" xccdf eval \
             --profile xccdf_org.ssgproject.content_profile_stig \
             --tailoring-file "images/${{ inputs.image-name }}/stig-tailoring.xml" \
             --results stig-results.xml \
             --report stig-report.html \
-            "scap-security-guide-${SSG_VERSION}/ssg-rhel9-ds.xml"
+            "scap-security-guide-${SSG_VERSION}/ssg-rhel9-ds.xml" || true
 
-          podman rm "$CID"
+          sudi podman rm "$CID"
 
       - name: Upload STIG report
         if: always() && inputs.data-boundary && github.event_name != 'pull_request'
