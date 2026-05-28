@@ -23,6 +23,7 @@ jobs:
       image-name: golang-build
       dockerfile: Dockerfile.builder
       context: images/golang
+      data-boundary: true
     permissions:
       contents: read
       packages: write
@@ -34,7 +35,7 @@ jobs:
       image-name: golang
       dockerfile: Dockerfile.runtime
       context: images/golang
-      production: true
+      data-boundary: true
     permissions:
       contents: read
       packages: write

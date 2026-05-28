@@ -31,9 +31,9 @@ on:
         type: string 
         default: Dockerfile
 
-      production:
+      data-boundary:
         required: false
-        description: Enable if for production images.
+        description: Enable if for data-boundary images.
         type: boolean 
         default: false
 
@@ -58,7 +58,7 @@ on:
         required: false
         type: string 
         default: Dockerfile
-      production:
+      data-boundary:
         required: false
         type: boolean 
         default: false
@@ -171,7 +171,7 @@ jobs:
 
 
       - name: Log podman into GHCR
-        if: inputs.production && github.event_name != 'pull_request'
+        if: inputs.data-boundary && github.event_name != 'pull_request'
         uses: redhat-actions/podman-login@v1
         with:
           registry: ${{ inputs.registry }}
@@ -179,35 +179,34 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Install & Run OpenSCAP STIG scan
-        if: inputs.production && github.event_name != 'pull_request'
+        if: inputs.data-boundary
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.IMAGE_REPOSITORY }}
           DIGEST: ${{ steps.build.outputs.digest }}
         run: |
           set -eu
           sudo apt-get update -qq
-          sudo apt-get install -y -qq openscap-scanner libopenscap8 podman
+          sudo apt-get install -y -qq openscap-scanner openscap-utils podman
 
-          # Fetch SSG content (pin the version)
           SSG_VERSION=0.1.80
           curl -fsSL -o ssg.tar.bz2 \
             "https://github.com/ComplianceAsCode/content/releases/download/v${SSG_VERSION}/scap-security-guide-${SSG_VERSION}.tar.bz2"
             tar -xjf ssg.tar.bz2
 
-            podman pull "${IMAGE}@${DIGEST}"
-            CID=$(podman create "${IMAGE}@${DIGEST}")
+          podman pull "${IMAGE}@${DIGEST}"
+          CID=$(podman create "${IMAGE}@${DIGEST}")
 
-            oscap-podman "$CID" xccdf eval \
-              --profile xccdf_org.ssgproject.content_profile_stig \
-              --tailoring-file "images/${{ inputs.image-name }}/stig-tailoring.xml" \
-              --results stig-results.xml \
-              --report stig-report.html \
-              "scap-security-guide-${SSG_VERSION}/ssg-rhel9-ds.xml"
+          oscap-podman "$CID" xccdf eval \
+            --profile xccdf_org.ssgproject.content_profile_stig \
+            --tailoring-file "images/${{ inputs.image-name }}/stig-tailoring.xml" \
+            --results stig-results.xml \
+            --report stig-report.html \
+            "scap-security-guide-${SSG_VERSION}/ssg-rhel9-ds.xml"
 
           podman rm "$CID"
 
       - name: Upload STIG report
-        if: always() && inputs.production && github.event_name != 'pull_request'
+        if: always() && inputs.data-boundary && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: stig-${{ inputs.image-name }}
