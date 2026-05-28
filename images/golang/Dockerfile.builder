@@ -7,8 +7,8 @@ ENV GOFIPS140=v1.0.0 \
     GOOS=linux \
     GOARCH=${TARGETARCH}
 
-RUN microdnf install -y --nodocs \
-    golang \
+RUN microdnf update -y \
+ && microdnf install -y --nodocs golang \
  && go version \
  && microdnf clean all \
  && rm -rf /var/cache/yum /var/cache/dnf
