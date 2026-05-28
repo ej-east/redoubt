@@ -15,7 +15,7 @@ Every image in this repository goes through the same pipeline:
 
 Images are published to GHCR at `ghcr.io/ej-east/<image-name>`. The build pipeline also exposes a reusable workflow at `.github/workflows/build-redoubt-image.yaml` that downstream repos call with `uses:`.
 
-## Quick Start 
+## Quick Start
 
 ### Pull and run
 
@@ -33,9 +33,9 @@ Pin to an immutable digest:
 docker pull ghcr.io/ej-east/static-base@sha256:<digest>
 ```
 
-### Use a baseline image 
+### Use a baseline image
 
-Use the static webserver base image. This runs as nobody(UID 65532) and is distroless. 
+Use the static webserver base image. This runs as nobody(UID 65532) and is distroless.
 
 ```dockerfile
 FROM ghcr.io/ej-east/static-base:latest
@@ -99,28 +99,29 @@ cosign verify-attestation \
 ## Image Catalog
 
 | Image Name                                                | Description                                                                                | Is FIPS? |
-|-----------------------------------------------------------|--------------------------------------------------------------------------------------------|----------|
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------- |
 | `ghcr.io/ej-east/static-base`                             | Static webserver image for SPAs and docs sites.                                            | No       |
 | `ghcr.io/ej-east/golang` / `ghcr.io/ej-east/golang-build` | This container is designed to build and run golang images within a production environment. | Yes      |
-
 
 ## Design Decisions
 
 ### Different base options
 
-Different images use different base options. For example `static-base` uses Google's solution to Distroless while the `golang` image set uses Red Hat's Universal Base Image (UBI). UBI Micro carries FIPS 140-3 validated cryptograph and is the right choice for Federal workloads. 
+Different images use different base options. For example `static-base` uses Google's solution to Distroless while the `golang` image set uses Red Hat's Universal Base Image (UBI). UBI Micro carries FIPS 140-3 validated cryptograph and is the right choice for Federal workloads.
 
-### Multi-architecture by default 
+### Multi-architecture by default
 
-Every image is built for both `amd64` and `arm64`. Production environments are increasingly using `arm64` devices. It's important to produce production ready images for these machines. 
+Every image is built for both `amd64` and `arm64`. Production environments are increasingly using `arm64` devices. It's important to produce production ready images for these machines.
 
 ### SLSA Level
 
-Images currently meet the requirements for **SLSA Build Level 2**. This is achieved through the following: Buildx generates in-toto provenance with `provenance: mode=max`. The resulting attestation is signed by GitHub Actions' OIDC identity, and the build runs on a GitHub-hosted runner. This process satisfies L2's hosted, authenticated, non-falsifiable provenance criteria. 
+Images currently meet the requirements for **SLSA Build Level 2**. This is achieved through the following: Buildx generates in-toto provenance with `provenance: mode=max`. The resulting attestation is signed by GitHub Actions' OIDC identity, and the build runs on a GitHub-hosted runner. This process satisfies L2's hosted, authenticated, non-falsifiable provenance criteria.
 
 **SLSA Build Level 3** is on the roadmap. Reaching it means adopting [`slsa-framework/slsa-github-generator`](https://github.com/slsa-framework/slsa-github-generator), instead of the current flow. The driver is that L3 is a FedRAMP requirement for certain workloads.
 
 ### OpenSCAP
+
+Production images are scanned against the [DISA STIG](https://public.cyber.mil/stigs/) profile using [OpenSCAP](https://www.open-scap.org/) and [ComplianceAsCode](https://github.com/ComplianceAsCode/content) (SSG) content.
 
 ## License
 
