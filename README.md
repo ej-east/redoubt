@@ -120,6 +120,8 @@ Images currently meet the requirements for **SLSA Build Level 2**. This is achie
 
 **SLSA Build Level 3** is on the roadmap. Reaching it means adopting [`slsa-framework/slsa-github-generator`](https://github.com/slsa-framework/slsa-github-generator), instead of the current flow. The driver is that L3 is a FedRAMP requirement for certain workloads.
 
+### OpenSCAP
+
 ## License
 
 See [LICENSE.md](LICENSE.md).
